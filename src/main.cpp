@@ -17,7 +17,7 @@ int main() {
     float timer = 0;
 
     sf::Font font;
-    if (!font.loadFromFile("bebasneue.ttf")) {
+    if (!font.loadFromFile("assets/bebasneue.ttf")) {
         printf("Font bebasneue.ttf is missing...\n");
         return 1;
     }
