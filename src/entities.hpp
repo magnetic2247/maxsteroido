@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
-#include "random.h"
+#include "random.hpp"
 
 class Entity {
 public:
