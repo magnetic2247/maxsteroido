@@ -1,14 +1,14 @@
 #include "entities.hpp"
 
 /* Base Entity */
-Entity::Entity(sf::RenderWindow *screen, sf::Vector2f coordinates, sf::Vector2f velocity) {
-    m_screen = screen;
+Entity::Entity(sf::Vector2f coordinates, sf::Vector2f velocity) {
     m_acceleration = sf::Vector2f(0,0);
     m_velocity = velocity;
     m_coordinates = coordinates;
 }
+Entity::Entity(){}
 
-void Entity::physics(sf::Time delta_time) {
+void Entity::physics(sf::Time delta_time, sf::Vector2u surface_size) {
     // Calculate new velocity based on acceleration
     m_velocity.x += m_acceleration.x * delta_time.asSeconds(); // Vx
     m_velocity.y += m_acceleration.y * delta_time.asSeconds(); // Vy
@@ -18,14 +18,14 @@ void Entity::physics(sf::Time delta_time) {
     m_coordinates.y += m_velocity.y * delta_time.asSeconds(); // Py
 
     // We're stuck in a space loop
-    if (m_coordinates.x >= m_screen->getSize().x) m_coordinates.x = 1; // x
-    if (m_coordinates.x <= 0) m_coordinates.x = m_screen->getSize().x-1;
-    if (m_coordinates.y >= m_screen->getSize().y) m_coordinates.y = 1; // y
-    if (m_coordinates.y <= 0) m_coordinates.y = m_screen->getSize().y-1;
+    if (m_coordinates.x >= surface_size.x) m_coordinates.x = 1; // x
+    if (m_coordinates.x <= 0) m_coordinates.x = surface_size.x-1;
+    if (m_coordinates.y >= surface_size.y) m_coordinates.y = 1; // y
+    if (m_coordinates.y <= 0) m_coordinates.y = surface_size.y-1;
 }
 
-void Entity::draw() {
-    m_screen->draw(new sf::Vertex(m_coordinates), 1, sf::Points);
+void Entity::draw(sf::RenderWindow *surface) {
+    surface->draw(new sf::Vertex(m_coordinates), 1, sf::Points);
 }
 
 void Entity::set_acceleration(int new_Ax, int new_Ay) {
@@ -56,20 +56,21 @@ float Entity::get_angle() {
 
 
 /* Spaceship */
-Spaceship::Spaceship(sf::RenderWindow *screen, sf::Vector2f coordinates, sf::Vector2f velocity, int length) : Entity(screen, coordinates, velocity) {
+Spaceship::Spaceship(sf::Vector2f coordinates, sf::Vector2f velocity, int length) : Entity(coordinates, velocity) {
     m_lastshot = 0.2;
     m_length = length;
     m_angle = 0;
 }
+Spaceship::Spaceship(){}
 
-void Spaceship::physics(sf::Time delta_time) {
-    Entity::physics(delta_time);
+void Spaceship::physics(sf::Time delta_time, sf::Vector2u surface_size) {
+    Entity::physics(delta_time, surface_size);
     m_velocity.x = std::max(-120.0, std::min((double)m_velocity.x, 120.0));
     m_velocity.y = std::max(-120.0, std::min((double)m_velocity.y, 120.0));
     m_lastshot += delta_time.asSeconds();
 }
 
-void Spaceship::draw() {
+void Spaceship::draw(sf::RenderWindow *surface) {
     sf::ConvexShape triangle;
     triangle.setPointCount(3);
     triangle.setPoint(0, sf::Vector2f(m_length/2, m_length*2));
@@ -84,7 +85,7 @@ void Spaceship::draw() {
     triangle.setFillColor(sf::Color(0,0,0));
     triangle.setOutlineColor(sf::Color(255, 255, 255));
 
-    m_screen->draw(triangle);
+    surface->draw(triangle);
 }
 
 void Spaceship::engine(float acceleration) {
@@ -110,12 +111,13 @@ sf::Rect<int> Spaceship::hitbox() {
 
 
 /* Laser Beam */
-LaserBeam::LaserBeam(sf::RenderWindow *screen, sf::Vector2f coordinates, sf::Vector2f velocity, float angle, int length) : Entity(screen, coordinates, velocity) {
+LaserBeam::LaserBeam(sf::Vector2f coordinates, sf::Vector2f velocity, float angle, int length) : Entity(coordinates, velocity) {
     m_angle = angle + M_PIl/4;
     m_length  = length;
 }
+LaserBeam::LaserBeam(){}
 
-void LaserBeam::draw() {
+void LaserBeam::draw(sf::RenderWindow *surface) {
     sf::Vertex line[2] = {
         sf::Vertex(sf::Vector2f(
             cos(m_angle)*m_length - sin(m_angle)*m_length + m_coordinates.x,
@@ -124,14 +126,13 @@ void LaserBeam::draw() {
         sf::Vertex(m_coordinates)
     };
 
-    m_screen->draw(line, 2, sf::Lines);
+    surface->draw(line, 2, sf::Lines);
 }
 
-int LaserBeam::out_of_bound() {
-    sf::Vector2u screen_size = m_screen->getSize();
+int LaserBeam::out_of_bound(sf::Vector2u surface_size) {
     return (
-        m_coordinates.x >= screen_size.x-1 ||
-        m_coordinates.y >= screen_size.y-1 ||
+        m_coordinates.x >= surface_size.x-1 ||
+        m_coordinates.y >= surface_size.y-1 ||
         m_coordinates.x <= 1 ||
         m_coordinates.y <= 1
     );
@@ -156,18 +157,19 @@ sf::Vector2f* LaserBeam::points() {
 
 
 /* Asteroids */
-Asteroid::Asteroid(sf::RenderWindow *screen, sf::Vector2f coordinates, sf::Vector2f velocity, int radius) : Entity(screen, coordinates, velocity) {
+Asteroid::Asteroid(sf::Vector2f coordinates, sf::Vector2f velocity, int radius) : Entity(coordinates, velocity) {
     m_radius = radius;
 }
+Asteroid::Asteroid(){}
 
-void Asteroid::draw() {
+void Asteroid::draw(sf::RenderWindow *surface) {
     sf::CircleShape c = sf::CircleShape(m_radius);
     c.setOrigin(m_radius, m_radius);
     c.setPosition(m_coordinates);
     c.setOutlineThickness(1.f);
     c.setFillColor(sf::Color(0,0,0,0));
     c.setOutlineColor(sf::Color(255, 255, 255));
-    m_screen->draw(c);
+    surface->draw(c);
 }
 
 Asteroid* Asteroid::split() {
@@ -175,7 +177,6 @@ Asteroid* Asteroid::split() {
 
     Asteroid* new_asteroids = new Asteroid[2] {
         Asteroid(
-            m_screen,
             sf::Vector2f(
                 m_coordinates.x+(m_radius/2)*(randrange(0,1)?1:-1)*randrange(1,2),
                 m_coordinates.y+(m_radius/2)*(randrange(0,1)?1:-1)*randrange(1,2)
@@ -187,7 +188,6 @@ Asteroid* Asteroid::split() {
             (int) m_radius/2
         ),
         Asteroid(
-            m_screen,
             sf::Vector2f(
                 m_coordinates.x+m_radius/2*(randrange(0,1)?1:-1)*randrange(1,2),
                 m_coordinates.y+m_radius/2*(randrange(0,1)?1:-1)*randrange(1,2)

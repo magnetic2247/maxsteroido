@@ -1,15 +1,17 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics.hpp>
 #include <algorithm>
-#include <cmath>
 #include <vector>
+#include <cmath>
 #include "random.hpp"
 
 class Entity {
 public:
-    Entity(sf::RenderWindow *screen, sf::Vector2f coordinates, sf::Vector2f velocity);
-    void physics(sf::Time delta_time);
-    void draw();
+    Entity(sf::Vector2f coordinates, sf::Vector2f velocity);
+    Entity();
+
+    void physics(sf::Time delta_time, sf::Vector2u surface_size);
+    void draw(sf::RenderWindow *surface);
 
     void set_acceleration(int new_Ax, int new_Ay);
     void set_coordinates(int new_Px, int new_Py);
@@ -20,7 +22,6 @@ public:
     float get_angle();
 
 protected:
-    sf::RenderWindow *m_screen;
     sf::Vector2f m_acceleration;
     sf::Vector2f m_velocity;
     sf::Vector2f m_coordinates;
@@ -29,9 +30,11 @@ protected:
 
 class Spaceship : public Entity {
 public:
-    Spaceship(sf::RenderWindow *screen, sf::Vector2f coordinates, sf::Vector2f velocity, int length);
-    void physics(sf::Time delta_time);
-    void draw();
+    Spaceship(sf::Vector2f coordinates, sf::Vector2f velocity, int length);
+    Spaceship();
+
+    void physics(sf::Time delta_time, sf::Vector2u surface_size);
+    void draw(sf::RenderWindow *surface);
     void engine(float acceleration);
     int shoot();
     sf::Rect<int> hitbox();
@@ -43,9 +46,11 @@ protected:
 
 class LaserBeam : public Entity {
 public:
-    LaserBeam(sf::RenderWindow *screen, sf::Vector2f coordinates, sf::Vector2f velocity, float angle, int length);
-    void draw();
-    int out_of_bound();
+    LaserBeam(sf::Vector2f coordinates, sf::Vector2f velocity, float angle, int length);
+    LaserBeam();
+
+    void draw(sf::RenderWindow *surface);
+    int out_of_bound(sf::Vector2u surface_size);
 
     int get_length();
     sf::Vector2f* points();
@@ -56,8 +61,10 @@ protected:
 
 class Asteroid : public Entity {
 public:
-    Asteroid(sf::RenderWindow *screen, sf::Vector2f coordinates, sf::Vector2f velocity, int radius);
-    void draw();
+    Asteroid(sf::Vector2f coordinates, sf::Vector2f velocity, int radius);
+    Asteroid();
+    
+    void draw(sf::RenderWindow *surface);
     Asteroid* split();
 
     // Returns position from first element
