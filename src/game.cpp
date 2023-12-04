@@ -113,7 +113,7 @@ void GameManager::gen_asteroids() {
     sf::Vector2u surface_size = m_surface->getSize();
     sf::Vector2f coordinates;
 
-    for (int i = 0; i < m_level*2+2; i++) {
+    for (int i = 0; i < m_level*2+randrange(2, std::max(m_level, 2)); i++) {
         if (randrange(0,1)) {
             coordinates = sf::Vector2f(
                 randrange(0,1) ? 82 : (surface_size.x - 82),
