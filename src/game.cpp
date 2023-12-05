@@ -78,7 +78,7 @@ void GameManager::frame(sf::Time delta_time) {
 
             m_lasers.erase(m_lasers.begin()+pos);
 
-            m_score += 50;
+            m_score += (m_level%2) ? m_level*50 : (m_level-1)*50;
             continue;
         }
         m_asteroids[i].physics(delta_time, m_surface->getSize());
