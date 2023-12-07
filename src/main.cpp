@@ -3,18 +3,12 @@
 #include <string>
 #include "game.hpp"
 
-// Helper functions
-void gen_asteroids(sf::RenderWindow *window, std::vector<Asteroid> *v, int n);
-
 int main() {
     printf("yes\n");
 
-    sf::err().rdbuf(nullptr);
     sf::RenderWindow window(sf::VideoMode(800, 600), "Maxsteroid", sf::Style::Titlebar | sf::Style::Close);
     window.setFramerateLimit(120);
-    sf::Clock clock;
-    sf::Event event;
-    float timer = 0;
+    sf::err().rdbuf(nullptr);
 
     sf::Font font;
     if (!font.loadFromFile("assets/bebasneue.ttf")) {
@@ -23,11 +17,15 @@ int main() {
     }
 
     sf::Text score_label("", font);
-    score_label.setPosition(2, 2);
     score_label.setCharacterSize(12);
+    score_label.setPosition(2, 2);
     sf::Text level_label("", font);
-    level_label.setPosition(2, 16);
     level_label.setCharacterSize(12);
+    level_label.setPosition(2, 16);
+
+    sf::Clock clock;
+    sf::Event event;
+    float timer = 0;
 
     GameManager game(&window);
 
