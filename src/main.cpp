@@ -7,7 +7,6 @@ int main() {
     printf("yes\n");
 
     sf::RenderWindow window(sf::VideoMode(800, 600), "Maxsteroid", sf::Style::Titlebar | sf::Style::Close);
-    window.setFramerateLimit(120);
     sf::err().rdbuf(nullptr);
 
     sf::Font font;
@@ -22,6 +21,12 @@ int main() {
     sf::Text level_label("", font);
     level_label.setCharacterSize(12);
     level_label.setPosition(2, 16);
+
+    sf::Text fps("", font);
+    fps.setCharacterSize(12);
+    fps.setPosition(2, 30);
+    float fps_timer = 0;
+    int frames = 0;
 
     sf::Clock clock;
     sf::Event event;
@@ -38,19 +43,28 @@ int main() {
         sf::Time delta_time = clock.restart();
         if (!game.asteroids_left()) timer += delta_time.asSeconds();
 
-        // New Level
+        // FPS Counter
+        if (fps_timer >= 1) {
+            fps.setString(std::to_string(frames) + "FPS");
+            fps_timer = 0;
+            frames = 0;
+        }
+        fps_timer += delta_time.asSeconds();
+        frames++;
+
+        // Next Level
         if (timer > 5) {
             timer = 0;
             game.next_level();
         }
+        score_label.setString("SCORE " + std::to_string(game.score()));
+        level_label.setString("LEVEL " + std::to_string(game.level()));
 
         // Reset Screen
         window.clear();
-        score_label.setString("SCORE " + std::to_string(game.score()));
+        window.draw(fps);
         window.draw(score_label);
-        level_label.setString("LEVEL " + std::to_string(game.level()));
         window.draw(level_label);
-
         game.frame(delta_time);
 
         window.display();
