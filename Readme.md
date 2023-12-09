@@ -1,2 +1,2 @@
-# Maxteroido
+# Maxsteroido
 Maxsteroid but harder
